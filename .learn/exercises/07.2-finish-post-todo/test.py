@@ -97,14 +97,14 @@ def test_add_new_todo():
 
 @pytest.mark.it("The endpoint POST /todos should exist")
 def test_return(client):
-    response = client.post('/todos', json={ "done": True, "label": "Sample Todo 2" })
-    assert response.status_code in [200, 201]
+    response = client.post('/todos', data=json.dumps({ "done": True, "label": "Sample Todo 2" }))
+    assert response.status_code == 200
 
 
 @pytest.mark.it("POST /todos should return json list of todos")
 def test_simple_add(client):
-    response = client.post('/todos', json = { "done": True, "label": "Sample Todo 2" })
-    assert response.status_code in [200, 201]
+    response = client.post('/todos', data=json.dumps({ "done": True, "label": "Sample Todo 2" }))
+    assert response.status_code == 200
     data = json.loads(response.data)
     assert isinstance(data, list)
 
@@ -113,7 +113,7 @@ def test_add_and_get(client):
     response = client.get('/todos')
     todos = json.loads(response.data)
 
-    response2 = client.post('/todos', json = { "done": True, "label": "Sample Todo 2" })
+    response2 = client.post('/todos', data=json.dumps({ "done": True, "label": "Sample Todo 2" }))
     data = json.loads(response2.data)
 
     assert (len(todos) + 1) == len(data)
@@ -122,7 +122,7 @@ def test_add_and_get(client):
 def test_incoming_list_format(client):
 
     payload = { "done": True, "label": "Sample Todo 45" }
-    response = client.post('/todos', json = payload)
+    response = client.post('/todos', data=json.dumps(payload))
     data = json.loads(response.data)
 
     for task in data:
@@ -134,10 +134,28 @@ def test_incoming_list(client):
 
     payload = { "done": True, "label": "Sam67ple Todo 37434" }
     print(json.dumps(payload))
-    response = client.post('/todos', json = payload)
+    response = client.post('/todos', data=json.dumps(payload))
     data = json.loads(response.data)
     matches = []
     for task in data:
         if task["label"] == payload["label"]:
             matches.append(task)
     assert 1 == len(matches)
+
+"""
+Testing DELETE
+"""
+
+@pytest.mark.it("The function delete_todo should be declared")
+def test_delete():
+    from src import app
+    try:
+        app.delete_todo
+        assert callable(app.delete_todo)
+    except AttributeError:
+        raise AttributeError("The function 'delete_todo' should exist on app.py")
+
+@pytest.mark.it("The endpoint 'DELETE /todos' should exist")
+def test_return(client):
+    response = client.delete('/todos/1')
+    assert response.status_code == 200
